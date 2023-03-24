@@ -1,3 +1,4 @@
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -6,6 +7,14 @@ from prefect import flow, task
 
 from data_utils import import_csv, save_csv
 
+VERSION = (
+    subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"],
+        stdout=subprocess.PIPE,
+    )
+    .stdout.decode("utf-8")
+    .strip()
+)
 LOCAL_STORE = Path("data")
 RAW_DIR = LOCAL_STORE / "raw"
 
@@ -47,7 +56,11 @@ def load(data: pd.DataFrame, prefix: str) -> None:
     save_csv(data, local_file)
 
 
-@flow
+@flow(
+    name="Hardware ETL Flow",
+    description="Simple flow to build my capstone project upon.",
+    version=VERSION,
+)
 def prefect_flow():
     # url for the source data
     url = "http://localhost:8080/hardware.csv"
