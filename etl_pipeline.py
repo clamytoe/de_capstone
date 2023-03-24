@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+from prefect import task
 
 from data_utils import import_csv, save_csv
 
@@ -9,6 +10,7 @@ LOCAL_STORE = Path("data")
 RAW_DIR = LOCAL_STORE / "raw"
 
 
+@task
 def extract(source: str, filename: str, save: bool = True) -> pd.DataFrame:
     # import the source
     csv_df = import_csv(source)
@@ -24,6 +26,7 @@ def extract(source: str, filename: str, save: bool = True) -> pd.DataFrame:
     return csv_df
 
 
+@task
 def transform(data: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     # select the specified columns
     df = data[columns]
@@ -34,6 +37,7 @@ def transform(data: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return df_nona
 
 
+@task
 def load(data: pd.DataFrame, prefix: str) -> None:
     # create file name with current date
     today = f"{prefix}_{int(datetime.now().timestamp())}.csv"
