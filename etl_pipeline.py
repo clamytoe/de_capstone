@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-from prefect import task
+from prefect import flow, task
 
 from data_utils import import_csv, save_csv
 
@@ -47,7 +47,8 @@ def load(data: pd.DataFrame, prefix: str) -> None:
     save_csv(data, local_file)
 
 
-if __name__ == "__main__":
+@flow
+def prefect_flow():
     # url for the source data
     url = "http://localhost:8080/hardware.csv"
 
@@ -59,11 +60,13 @@ if __name__ == "__main__":
 
     # extract the data
     df_hosts = extract(url, filename)
-    print(df_hosts.head())
 
     # transform the data
     df = transform(df_hosts, columns)
-    print(df.head())
 
     # load the data
     load(df, "hosts")
+
+
+if __name__ == "__main__":
+    prefect_flow()
