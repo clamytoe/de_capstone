@@ -19,7 +19,7 @@ LOCAL_STORE = Path("data")
 RAW_DIR = LOCAL_STORE / "raw"
 
 
-@task
+@task(retries=10, retry_delay_seconds=10)
 def extract(source: str, filename: str, save: bool = True) -> pd.DataFrame:
     # import the source
     csv_df = import_csv(source)
