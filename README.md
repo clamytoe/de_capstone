@@ -11,10 +11,6 @@
 
 NOTE: This project was generated with [Cookiecutter](https://github.com/audreyr/cookiecutter) along with [@clamytoe's](https://github.com/clamytoe) [toepack](https://github.com/clamytoe/toepack) project template.
 
-## Tutorial
-
-url: <https://towardsdatascience.com/prefect-how-to-write-and-schedule-your-first-etl-pipeline-with-python-54005a34f10b>
-
 ## Initial setup
 
 ```zsh
