@@ -1,11 +1,10 @@
 import subprocess
-from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
+import requests
 from prefect import flow, task
-
-from data_utils import import_csv, save_csv
 
 VERSION = (
     subprocess.run(
@@ -20,65 +19,98 @@ RAW_DIR = LOCAL_STORE / "raw"
 
 
 @task(retries=10, retry_delay_seconds=10)
-def extract(source: str, filename: str, save: bool = True) -> pd.DataFrame:
+def extract(source: str, filename: str, save: bool = True) -> Any:
     # import the source
-    csv_df = import_csv(source)
+    res = requests.get(source)
+    if res.ok:
+        coins = res.json()
 
-    if save:
-        # create directories if they do not exist
-        RAW_DIR.mkdir(parents=True, exist_ok=True)
+        if save:
+            # create directories if they do not exist
+            RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-        # save the file
-        source_file = RAW_DIR / filename
-        csv_df.to_csv(source_file, index=False)
+            # save raw the file
+            ts = coins["timestamp"]
+            source_file = RAW_DIR / f"{ts}_{filename}"
+            raw_df = pd.DataFrame(coins["data"])
+            raw_df["timestamp"] = coins["timestamp"]
+            raw_df.to_csv(source_file, index=False)
 
-    return csv_df
-
-
-@task
-def transform(data: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
-    # select the specified columns
-    df = data[columns]
-
-    # remove null values
-    df_nona = df.fillna("None")
-
-    return df_nona
+        return coins
 
 
 @task
-def load(data: pd.DataFrame, prefix: str) -> None:
+def transform(data: Any) -> tuple[str, pd.DataFrame]:
+    missing = {
+        "gatetoken": "https://gatechain.io/",
+        "dydx": "https://dydx.foundation/",
+    }
+    coins = data["data"]
+    str_datetime = data["timestamp"]
+    ts = pd.to_datetime(data["timestamp"], unit="ms")
+    transformed = []
+    for coin in coins:
+        try:
+            if coin["id"] in missing.keys():
+                coin["explorer"] = missing[coin["id"]]
+            transformed.append(
+                {
+                    "timestamp": ts,
+                    "id": coin["id"],
+                    "rank": int(coin["rank"]),
+                    "symbol": coin["symbol"],
+                    "name": coin["name"],
+                    "supply": float(coin["supply"]),
+                    # "max_supply": float(coin["maxSupply"]) if coin["maxSupply"] else None,
+                    "market_cap_usd": float(coin["marketCapUsd"]),
+                    "volume_usd_24hr": float(coin["volumeUsd24Hr"]),
+                    "price_usd": float(coin["priceUsd"]),
+                    "change_percent_24hr": float(coin["changePercent24Hr"]),
+                    # "vwap_24hr": float(coin["vwap24Hr"]) if coin["vwap24Hr"] else None,
+                    "url": coin["explorer"],
+                }
+            )
+        except TypeError as e:
+            print(f"Error processing: \n{coin}\n{e}")
+            print("###")
+
+    return str_datetime, pd.DataFrame(transformed)
+
+
+@task
+def load(
+    data: pd.DataFrame,
+    prefix: str,
+    date: str,
+) -> None:
     # create file name with current date
-    today = f"{prefix}_{int(datetime.now().timestamp())}.csv"
-    local_file = LOCAL_STORE / today
+    filename = f"{date}_{prefix}.parquet"
+    local_file = LOCAL_STORE / filename
 
     # save dataframe
-    save_csv(data, local_file)
+    data.to_parquet(local_file)
 
 
 @flow(
-    name="Hardware ETL Flow",
+    name="Crypto Coins ETL Flow",
     description="Simple flow to build my capstone project upon.",
     version=VERSION,
 )
 def prefect_flow():
     # url for the source data
-    url = "http://localhost:8080/hardware.csv"
+    url = "https://api.coincap.io/v2/assets"
 
     # local name for source file
-    filename = "hardware.csv"
-
-    # specify the columns to keep
-    columns = "host host_sn display display_sn".split()
+    filename = "cryptocoin.csv"
 
     # extract the data
-    df_hosts = extract(url, filename)
+    coins_json = extract(url, filename)
 
     # transform the data
-    df = transform(df_hosts, columns)
+    timestamp, df = transform(coins_json)
 
     # load the data
-    load(df, "hosts")
+    load(df, "coins", timestamp)
 
 
 if __name__ == "__main__":
