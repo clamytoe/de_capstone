@@ -13,6 +13,11 @@ dependencies:
   - pandas
   - requests
   - prefect
+  - notebook
+  - nb_conda_kernels
+  - fastparquet
+  - python-snappy
   - pip:
+      - google-cloud-storage
       - pip-chill
-prefix: /home/clamytoe/miniconda3/envs/decap
+      - prefect-gcp
