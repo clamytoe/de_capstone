@@ -1,10 +1,17 @@
+import json
 import subprocess
-from pathlib import Path
-from typing import Any
+from datetime import datetime, timedelta
 
 import pandas as pd
+import pytz
 import requests
 from prefect import flow, task
+from prefect.task_runners import ConcurrentTaskRunner
+# from prefect.deployments import Deployment
+# from prefect.server.schemas.schedules import CronSchedule
+# from prefect.tasks import task_input_hash
+from prefect_gcp import GcpCredentials
+from prefect_gcp.bigquery import bigquery_insert_stream
 
 VERSION = (
     subprocess.run(
@@ -14,40 +21,33 @@ VERSION = (
     .stdout.decode("utf-8")
     .strip()
 )
-LOCAL_STORE = Path("data")
-RAW_DIR = LOCAL_STORE / "raw"
 
 
-@task(retries=10, retry_delay_seconds=10)
-def extract(source: str, filename: str, save: bool = True) -> Any:
+@task
+def get_data(url: str):
     # import the source
-    res = requests.get(source)
+    res = requests.get(url)
     if res.ok:
         coins = res.json()
-
-        if save:
-            # create directories if they do not exist
-            RAW_DIR.mkdir(parents=True, exist_ok=True)
-
-            # save raw the file
-            ts = coins["timestamp"]
-            source_file = RAW_DIR / f"{ts}_{filename}"
-            raw_df = pd.DataFrame(coins["data"])
-            raw_df["timestamp"] = coins["timestamp"]
-            raw_df.to_csv(source_file, index=False)
 
         return coins
 
 
 @task
-def transform(data: Any) -> tuple[str, pd.DataFrame]:
+def transform_data(data):
     missing = {
         "gatetoken": "https://gatechain.io/",
         "dydx": "https://dydx.foundation/",
     }
     coins = data["data"]
-    str_datetime = data["timestamp"]
+
+    # Convert timestamp string to datetime object
     ts = pd.to_datetime(data["timestamp"], unit="ms")
+    dt = datetime.strptime(str(ts), "%Y-%m-%d %H:%M:%S.%f")
+
+    # Convert datetime object to Unix timestamp
+    unix_timestamp = dt.timestamp()
+
     transformed = []
     for coin in coins:
         try:
@@ -55,7 +55,7 @@ def transform(data: Any) -> tuple[str, pd.DataFrame]:
                 coin["explorer"] = missing[coin["id"]]
             transformed.append(
                 {
-                    "timestamp": ts,
+                    "timestamp": unix_timestamp,
                     "id": coin["id"],
                     "rank": int(coin["rank"]),
                     "symbol": coin["symbol"],
@@ -74,44 +74,38 @@ def transform(data: Any) -> tuple[str, pd.DataFrame]:
             print(f"Error processing: \n{coin}\n{e}")
             print("###")
 
-    return str_datetime, pd.DataFrame(transformed)
+    return pd.DataFrame(transformed)
 
 
-@task
-def load(
-    data: pd.DataFrame,
-    prefix: str,
-    date: str,
-) -> None:
-    # create file name with current date
-    filename = f"{date}_{prefix}.parquet"
-    local_file = LOCAL_STORE / filename
+@flow
+def insert_into_bigquery(data):
+    # your code to insert data into BigQuery goes here
+    gcp_credentials = GcpCredentials(project="dtc-de-course-374214")
 
-    # save dataframe
-    data.to_parquet(local_file)
+    data_json = json.loads(data.to_json(orient="records"))
+
+    result = bigquery_insert_stream(
+        dataset="crypto_decap",
+        table="coins",
+        records=data_json,
+        gcp_credentials=gcp_credentials,
+        location="us-central1",
+    )
+    return result
 
 
 @flow(
     name="Crypto Coins ETL Flow",
     description="Simple flow to build my capstone project upon.",
     version=VERSION,
+    task_runner=ConcurrentTaskRunner(),
 )
-def prefect_flow():
-    # url for the source data
-    url = "https://api.coincap.io/v2/assets"
-
-    # local name for source file
-    filename = "cryptocoin.csv"
-
-    # extract the data
-    coins_json = extract(url, filename)
-
-    # transform the data
-    timestamp, df = transform(coins_json)
-
-    # load the data
-    load(df, "coins", timestamp)
+def etl_api_to_bq(url: str) -> None:
+    data = get_data(url)
+    trans_data = transform_data(data)
+    _ = insert_into_bigquery(trans_data)
 
 
 if __name__ == "__main__":
-    prefect_flow()
+    url = "https://api.coincap.io/v2/assets"
+    etl_api_to_bq(url)

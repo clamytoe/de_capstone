@@ -1,0 +1,45 @@
+###
+### A complete description of a Prefect Deployment for flow 'Crypto Coins ETL Flow'
+###
+name: Decap BQ ETL
+description: Simple flow to build my capstone project upon.
+version: b35c9a4
+# The work queue that will handle this deployment's runs
+work_queue_name: default
+work_pool_name: null
+tags: []
+parameters: { "url": "https://api.coincap.io/v2/assets" }
+schedule: null
+is_schedule_active: null
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  block_type_slug: process
+  _block_type_slug: process
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: Crypto Coins ETL Flow
+manifest_path: null
+storage: null
+path: /home/clamytoe/Projects/de_capstone
+entrypoint: flows/bq_flow.py:etl_api_to_bq
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    url:
+      title: url
+      position: 0
+      type: string
+  required:
+    - url
+  definitions: null
+timestamp: "2023-04-02T03:56:06.234458+00:00"
