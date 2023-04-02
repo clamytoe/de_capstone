@@ -1,15 +1,11 @@
 import json
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pandas as pd
-import pytz
 import requests
 from prefect import flow, task
 from prefect.task_runners import ConcurrentTaskRunner
-# from prefect.deployments import Deployment
-# from prefect.server.schemas.schedules import CronSchedule
-# from prefect.tasks import task_input_hash
 from prefect_gcp import GcpCredentials
 from prefect_gcp.bigquery import bigquery_insert_stream
 
