@@ -1,6 +1,6 @@
 # Data Engineer Zoomcamp: Capstone Project (*de_capstone*)
 
-> *This is an ETL project created for my capstone project for the DE Zoomcamp course.*
+> *This is an ETL pipeline created for my capstone project as part of the DE Zoomcamp course.*
 
 ![Python version][python-version]
 ![Latest version][latest-version]
@@ -9,7 +9,7 @@
 [![GitHub Stars][stars-image]][stars-url]
 [![License][license-image]][license-url]
 
-NOTE: This project was generated with [Cookiecutter](https://github.com/audreyr/cookiecutter) along with [@clamytoe's](https://github.com/clamytoe) [toepack](https://github.com/clamytoe/toepack) project template.
+NOTE: This project template was generated with [Cookiecutter](https://github.com/audreyr/cookiecutter) using my [toepack](https://github.com/clamytoe/toepack) project template.
 
 For this project I decided to capture near real-time crypto currency data and analyze it to see how it fluctuates throughout the day. Here are some details about the dataset:
 
@@ -20,9 +20,9 @@ For this project I decided to capture near real-time crypto currency data and an
 * partition: By day using **timestamp** field
 * cluster: By **id** field
 
-While trying to figure out how to approach this problem, I discovered that I could skip uploading the dataset files into Google Cloud Storage and add the rows directly into my database table on BigQuery with the use of `prefect_gcp.bigquery.bigquery_insert_stream`!
+While trying to figure out how to approach this problem, I discovered that I could skip uploading the dataset files into Google Cloud Storage and add the rows directly into my database table on BigQuery with the use of `bigquery_insert_stream` from the `bigquery` module found in the `prefect_gcp` package.
 
-Although it took me a while to get it to work right, the approach is relatively straightforward... well once you know how to do it.
+Although it took me a while to get it to work right, the approach is relatively straight forward... well once you know how to do it.
 
 > **NOTE:** I'd like to thank [coincap](https://coincap.io/) for providing the service for free! They are pretty generous with their free tier, which I greatly appreciate.
 
