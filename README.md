@@ -11,7 +11,7 @@
 
 NOTE: This project template was generated with [Cookiecutter](https://github.com/audreyr/cookiecutter) using my [toepack](https://github.com/clamytoe/toepack) project template.
 
-For this project I decided to capture near real-time crypto currency data and analyze it to see how it fluctuates throughout the day. Here are some details about the dataset:
+For this project I decided to go with a streaming datasource. With the goal of capturing near real-time crypto currency data and analyze it to see how it fluctuates throughout the day. Here are some details about the data:
 
 * source: [coincap.io](https://coincap.io/)
 * coins: **Top 100** ranking coins
@@ -209,9 +209,28 @@ Once you have created the new table, you can verify that it is partitioned and c
 
 ## Dashboard
 
-To generate the dashboard I used [Metabase](https://www.metabase.com/). Their interface is slick and easy to use.
+To generate the dashboard I used [Metabase](https://www.metabase.com/). Their interface is slick and easy to use. You can run a local containerized version with the following command:
+
+```bash
+docker run -d -p 3000:3000 metabase/metabase
+6e79400f5d3b8836f120e774f40a0e7206dae2c394785fcaf9d5b8fdd08150dd
+```
+
+The interface will now be available at: [loccalhost:3000](http://localhost:3000)
+
+![metabase](images/metabase.png)
+
+You will have to configure it to connect to your account on whichever cloud platform you are using.
+
+![metabase-setup](images/metabase-setup.png)
+
+Once you have successfully connected, you can start playing around creating dashboards.
 
 ![dashboard](images/dashboard.png)
+
+Once more data has been collected, more meaningful charts can be created.
+
+![tracker](images/tracker.png)
 
 ## License
 
