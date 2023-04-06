@@ -207,6 +207,18 @@ Once you have created the new table, you can verify that it is partitioned and c
 
 ![table](images/table.png)
 
+## dbt
+
+Now that the data has been collected for a while, it's time to start creating some tables from it. For this I used [dbt](https://www.getdbt.com/) and my repo for that portion can be found here: [dbt_crypto](https://github.com/clamytoe/dbt_crypto)
+
+The line graph for this portion of the project looks like this:
+
+![dbt-graph](images/dbt-line-graph.png)
+
+I've created a deployment for the dbt project and scheduled it to run once every hour.
+
+![dbt-schedule](images/dbt-schedule.png)
+
 ## Dashboard
 
 To generate the dashboard I used [Metabase](https://www.metabase.com/). Their interface is slick and easy to use. You can run a local containerized version with the following command:
@@ -231,6 +243,57 @@ Once you have successfully connected, you can start playing around creating dash
 Once more data has been collected, more meaningful charts can be created.
 
 ![tracker](images/tracker.png)
+
+## Docker container
+
+If you want to automate the deployment a little further, I've provided a Dockerfile so that you can build your own image. You can start by issueing a similar command:
+
+```bash
+docker image build -t clamytoe/prefect:decap .
+```
+
+Push your image to Docker Hub:
+
+```bash
+docker image push clamytoe/prefect:decap
+```
+
+Create the necessary Docker Container Block:
+
+```bash
+python flows/docker_deploy.py
+```
+
+You can see what profile you are currently using with the following command:
+
+```bash
+prefect profile ls
+┏━━━━━━━━━━━━━━━━━━━━━┓
+┃ Available Profiles: ┃
+┡━━━━━━━━━━━━━━━━━━━━━┩
+│           * default │
+│               cloud │
+└─────────────────────┘
+   * active profile
+```
+
+Change from prefect default profile to cloud one:
+
+```bash
+prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+```
+
+To launch your deployment:
+
+```bash
+prefect deployment run "Crypto Coins ETL Flow/docker-flow" -p "url=https://api.coincap.io/v2/assets"
+Creating flow run for deployment 'Crypto Coins ETL Flow/docker-flow'...
+Created flow run 'subtle-axolotl'.
+└── UUID: de374cf2-185b-4e8d-b943-3c74a5cd18fb
+└── Parameters: {'url': 'https://api.coincap.io/v2/assets'}
+└── Scheduled start time: 2023-04-04 21:57:51 CDT (now)
+└── URL: http://127.0.0.1:4200/flow-runs/flow-run/de374cf2-185b-4e8d-b943-3c74a5cd18fb
+```
 
 ## License
 
