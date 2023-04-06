@@ -256,6 +256,10 @@ Once more data has been collected, more meaningful charts can be created.
 
 ![tracker](images/tracker.png)
 
+Bitcoin Distribution
+
+![btc-dist](images/btc-dist.png)
+
 ## License
 
 Distributed under the terms of the [MIT](https://opensource.org/licenses/MIT) license, "de_capstone" is free and open source software.
@@ -263,10 +267,6 @@ Distributed under the terms of the [MIT](https://opensource.org/licenses/MIT) li
 ## Issues
 
 If you encounter any problems, please [file an issue](https://github.com/clamytoe/toepack/issues) along with a detailed description.
-
-## Changelog
-
-* **v0.1.0** Initial commit.
 
 [python-version]:https://img.shields.io/badge/python-3.10.9-brightgreen.svg
 [latest-version]:https://img.shields.io/badge/version-0.1.0-blue.svg
