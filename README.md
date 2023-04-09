@@ -211,9 +211,19 @@ Once you have created the new table, you can verify that it is partitioned and c
 
 Now that the data has been collected for a while, it's time to start creating some tables from it. For this I used [dbt](https://www.getdbt.com/) and my repo for that portion can be found here: [dbt_crypto](https://github.com/clamytoe/dbt_crypto)
 
+### Local dbt setup
+
+I created a local deployment of dbt as a Docker container. If you would like to see how that is done, head on over to my repo [dbt_crypto_local](https://github.com/clamytoe/dbt_crypto_local)
+
+### dbt cloud
+
+The following was created on the dbt cloud platform [dbt cloud](https://cloud.getdbt.com/).
+
 The line graph for this portion of the project looks like this:
 
 ![dbt-graph](images/dbt-line-graph.png)
+
+![dbt-forecast](images/dbt-forecast.png)
 
 I've created a deployment for the dbt project and scheduled it to run once every hour.
 
