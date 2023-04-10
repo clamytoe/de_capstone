@@ -270,6 +270,12 @@ Bitcoin Distribution
 
 ![btc-dist](images/btc-dist.png)
 
+## Google Looker Studio
+
+I also went ahead and created a quick [dashboard](https://lookerstudio.google.com/s/kj25Csr7mus) on Looker Studio.
+
+![trends](images/trends.png)
+
 ## License
 
 Distributed under the terms of the [MIT](https://opensource.org/licenses/MIT) license, "de_capstone" is free and open source software.
