@@ -272,7 +272,7 @@ Bitcoin Distribution
 
 ## Google Looker Studio
 
-I also went ahead and created a quick [dashboard](https://lookerstudio.google.com/s/kj25Csr7mus) on Looker Studio.
+I also went ahead and created a quick dashboard on Looker Studio.
 
 ![trends](images/trends.png)
 
